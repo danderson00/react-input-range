@@ -188,6 +188,7 @@ export default class Slider extends React.Component {
    */
   @autobind
   handleMouseMove(event) {
+    event.stopImmediatePropagation();
     this.props.onSliderDrag(event, this.props.type);
   }
 

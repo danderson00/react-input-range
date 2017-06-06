@@ -90,6 +90,18 @@ export default class InputRange extends React.Component {
      * @type {?Component}
      */
     this.trackNode = null;
+
+    /**
+     * @private
+     * @type {?Point}
+     */
+    this.dragStartPosition = null;
+
+    /**
+     * @private
+     * @type {?Range}
+     */
+    this.dragStartPositions = null;
   }
 
   /**
@@ -220,6 +232,24 @@ export default class InputRange extends React.Component {
     const positions = valueTransformer.getPositionsFromValues(values, this.props.minValue, this.props.maxValue, this.getTrackClientRect());
 
     positions[key] = position;
+
+    this.updatePositions(positions);
+  }
+
+  /**
+   * Update the position of a slider
+   * @private
+   * @param {string} key
+   * @param {Point} position
+   * @return {void}
+   */
+  updatePositionsRelative(startPositions, start, end) {
+    const variance = { x: end.x - start.x, y: end.y - start.y };
+
+    const positions = {
+      min: { x: startPositions.min.x + variance.x, y: startPositions.min.y + variance.y },
+      max: { x: startPositions.max.x + variance.x, y: startPositions.max.y + variance.y },
+    };
 
     this.updatePositions(positions);
   }
@@ -403,7 +433,46 @@ export default class InputRange extends React.Component {
 
     event.preventDefault();
 
-    this.updatePosition(this.getKeyByPosition(position), position);
+    const values = valueTransformer.getValueFromProps(this.props, this.isMultiValue());
+    const positions = valueTransformer.getPositionsFromValues(values, this.props.minValue, this.props.maxValue, this.getTrackClientRect());
+
+    this.dragStartPositions = positions;
+    this.dragStartPosition = position;
+
+    // this.updatePosition(this.getKeyByPosition(position), position);
+  }
+
+  /**
+   * Handle any "mouseup" event received by the track
+   * @private
+   * @param {SyntheticEvent} event
+   * @param {Point} position
+   * @return {void}
+   */
+  @autobind
+  handleTrackMouseUp(event) {
+    if (this.props.disabled) {
+      return;
+    }
+
+    event.preventDefault();
+
+    this.dragStartPosition = null;
+  }
+  /**
+   * Handle any "mousemove" event received by the track
+   * @private
+   * @param {SyntheticEvent} event
+   * @param {string} key
+   * @return {void}
+   */
+  @autobind
+  handleTrackDrag(event, position) {
+    if (this.props.disabled) {
+      return;
+    }
+
+    requestAnimationFrame(() => this.updatePositionsRelative(this.dragStartPositions, this.dragStartPosition, position));
   }
 
   /**
@@ -602,7 +671,9 @@ export default class InputRange extends React.Component {
           classNames={this.props.classNames}
           ref={(trackNode) => { this.trackNode = trackNode; }}
           percentages={percentages}
-          onTrackMouseDown={this.handleTrackMouseDown}>
+          onTrackMouseDown={this.handleTrackMouseDown}
+          onTrackMouseUp={this.handleTrackMouseUp}
+          onTrackDrag={this.handleTrackDrag}>
 
           {this.renderSliders()}
         </Track>
