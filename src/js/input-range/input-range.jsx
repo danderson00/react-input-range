@@ -433,13 +433,15 @@ export default class InputRange extends React.Component {
 
     event.preventDefault();
 
-    const values = valueTransformer.getValueFromProps(this.props, this.isMultiValue());
-    const positions = valueTransformer.getPositionsFromValues(values, this.props.minValue, this.props.maxValue, this.getTrackClientRect());
+    const currentValues = valueTransformer.getValueFromProps(this.props, this.isMultiValue());
+    const currentPositions = valueTransformer.getPositionsFromValues(currentValues, this.props.minValue, this.props.maxValue, this.getTrackClientRect());
 
-    this.dragStartPositions = positions;
-    this.dragStartPosition = position;
-
-    // this.updatePosition(this.getKeyByPosition(position), position);
+    if (this.isMultiValue() && position.x > currentPositions.min.x && position.x < currentPositions.max.x) {
+      this.dragStartPositions = currentPositions;
+      this.dragStartPosition = position;
+    } else {
+      this.updatePosition(this.getKeyByPosition(position), position);
+    }
   }
 
   /**
@@ -457,6 +459,7 @@ export default class InputRange extends React.Component {
 
     event.preventDefault();
 
+    this.dragStartPositions = null;
     this.dragStartPosition = null;
   }
   /**
@@ -468,11 +471,14 @@ export default class InputRange extends React.Component {
    */
   @autobind
   handleTrackDrag(event, position) {
-    if (this.props.disabled) {
+    if (this.props.disabled || this.dragStartPosition === null || this.dragStartPositions === null) {
       return;
     }
 
-    requestAnimationFrame(() => this.updatePositionsRelative(this.dragStartPositions, this.dragStartPosition, position));
+    const startPosition = Object.assign({}, this.dragStartPosition);
+    const startPositions = Object.assign({}, this.dragStartPositions);
+
+    requestAnimationFrame(() => this.updatePositionsRelative(startPositions, startPosition, position));
   }
 
   /**
