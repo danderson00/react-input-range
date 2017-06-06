@@ -5,6 +5,7 @@
 */
 const DEFAULT_CLASS_NAMES = {
   activeTrack: 'input-range__track input-range__track--active',
+  selectableTrack: 'input-range__track--selectable',
   disabledInputRange: 'input-range input-range--disabled',
   inputRange: 'input-range',
   labelContainer: 'input-range__label-container',

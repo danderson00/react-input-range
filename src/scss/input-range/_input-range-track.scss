@@ -1,7 +1,6 @@
 .input-range__track {
   background: $input-range-track-background;
   border-radius: $input-range-track-height;
-  cursor: pointer;
   display: block;
   height: $input-range-track-height;
   position: relative;
@@ -9,6 +8,15 @@
 
   .input-range--disabled & {
     background: $input-range-track-disabled-background;
+  }
+}
+
+.input-range__track--selectable {
+  padding: 9px 0;
+  cursor: pointer;
+
+  .input-range--disabled & {
+    cursor: default;
   }
 }
 
